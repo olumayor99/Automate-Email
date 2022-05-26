@@ -30,7 +30,7 @@ Make sure you complete the following steps before using this repo
 
 8. After filling the credentials.yaml file, copy credentials.yaml, email_auto.py, email_auto.sh, and email_auto.service to the /home/ubuntu/ folder of the EC2 instance.
 
-9. Move "email_auto.service" to /etc/systemd/system/ folder, then run sudo chmod 664 /etc/systemd/system/email_auto.service
+9. Move "email_auto.service" to /etc/systemd/system/ folder, then run "sudo chmod 664 /etc/systemd/system/email_auto.service"
 
 10. Run "chmod 744 /home/ubuntu/email_auto.sh" or "chmod u+x email_auto.sh"
 
