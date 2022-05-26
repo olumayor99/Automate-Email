@@ -99,6 +99,6 @@ xfile1_not_xfile2 = xfile_join.loc[xfile_join[xfile2.columns.to_list(
 xfile2_not_xfile1 = xfile_join.loc[xfile_join[xfile1.columns.to_list(
 )].isnull().all(axis=1), xfile2.columns.to_list()]
 
-xfile1_not_xfile2.to_excel('new_items.xlsx')
+xfile1_not_xfile2.to_excel(os.path.join(att_dir, 'new_items.xlsx'))
 
 print(xfile1_not_xfile2)
