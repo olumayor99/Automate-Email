@@ -1,3 +1,7 @@
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 from datetime import date, timedelta
 import imaplib
 import pandas as pd
@@ -6,6 +10,7 @@ import yaml
 import os
 import os.path
 import shutil
+import smtplib
 
 i = 0
 
@@ -16,8 +21,8 @@ att_dir = today_date.replace(' ', '')
 with open("credentials.yaml") as f:
     content = f.read()
 credentials = yaml.load(content, Loader=yaml.FullLoader)
-user, password, key, value, imap_url, mail_selector = credentials["user"], credentials["password"], credentials[
-    "key"], credentials["value"], credentials["imap_url"], credentials["mail_selector"]
+user, password, key, value, imap_url, mail_selector, mail_content, sender_address, sender_pass, receiver_address = credentials["user"], credentials["password"], credentials[
+    "key"], credentials["value"], credentials["imap_url"], credentials["mail_selector"], credentials["mail_content"], credentials["sender_address"], credentials["sender_pass"], credentials["receiver_address"]
 
 
 my_mail = imaplib.IMAP4_SSL(imap_url)
@@ -79,6 +84,7 @@ while i < 2:
 
     i += 1
 
+
 xfile1 = pd.read_excel(os.path.join(att_dir, 'file0.xlsx'))
 
 xfile2 = pd.read_excel(os.path.join(att_dir, 'file1.xlsx'))
@@ -102,3 +108,30 @@ xfile2_not_xfile1 = xfile_join.loc[xfile_join[xfile1.columns.to_list(
 xfile1_not_xfile2.to_excel(os.path.join(att_dir, 'new_items.xlsx'))
 
 print(xfile1_not_xfile2)
+
+
+message = MIMEMultipart()
+message['From'] = sender_address
+message['To'] = receiver_address
+message['Subject'] = 'Daily results for newly added items.'
+
+message.attach(MIMEText(mail_content, 'plain'))
+attach_file_name = 'new_items.xlsx'
+attach_file = open((os.path.join(att_dir, 'new_items.xlsx')), 'rb')
+payload = MIMEBase('application', 'octate-stream')
+payload.set_payload((attach_file).read())
+encoders.encode_base64(payload)
+
+payload.add_header(
+    "Content-Disposition",
+    f"attachment; filename= {attach_file_name}",
+)
+message.attach(payload)
+
+session = smtplib.SMTP('smtp.gmail.com', 587)
+session.starttls()
+session.login(sender_address, sender_pass)
+text = message.as_string()
+session.sendmail(sender_address, receiver_address, text)
+session.quit()
+print('Mail Sent')
