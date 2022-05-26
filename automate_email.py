@@ -18,13 +18,16 @@ today_date = date.today().strftime("%d %B %Y")
 
 att_dir = today_date.replace(' ', '')
 
-with open("credentials.yaml") as f:
+# with open("credentials.yaml") as f:
+# My Ubuntu EC2 instance used the absolute path instead of relative
+with open("/home/ubuntu/credentials.yaml") as f:
     content = f.read()
 credentials = yaml.load(content, Loader=yaml.FullLoader)
 user, password, key, value, imap_url, mail_selector, mail_content, sender_address, sender_pass, receiver_address = credentials["user"], credentials["password"], credentials[
     "key"], credentials["value"], credentials["imap_url"], credentials["mail_selector"], credentials["mail_content"], credentials["sender_address"], credentials["sender_pass"], credentials["receiver_address"]
 
 
+# Mail reading and excel files extraction section
 my_mail = imaplib.IMAP4_SSL(imap_url)
 
 my_mail.login(user, password)
@@ -40,27 +43,20 @@ for num in mail_id_list:
     typ, data = my_mail.fetch(num, '(RFC822)')
     msgs.append(data)
 
-try:
+try:                         # check to see if the directory exists and if it does, delete and recreate it
     os.mkdir(att_dir)
 except FileExistsError:
     shutil.rmtree(att_dir)
     os.mkdir(att_dir)
 
-while i < 2:
+while i < 2:                 # Iterate just twice to get yesterday and today's files
     for msg in msgs[::-1]:
         for response_part in msg:
             if type(response_part) is tuple:
                 my_msg = email.message_from_bytes((response_part[1]))
                 rcv_date = (date.today() - timedelta(i)).strftime("%d %B %Y")
                 if rcv_date in my_msg["date"]:
-                    print("_____________________________")
-                    print("subj:", my_msg["subject"])
-                    print("from:", my_msg["from"])
-                    print("date:", my_msg["date"])
-                    print("body:")
                     for part in my_msg.walk():
-                        if part.get_content_type() == 'text/plain':
-                            print(part.get_payload())
                         if part.get_content_maintype() == 'multipart':
                             continue
                         if part.get('Content-Disposition') is None:
@@ -73,8 +69,6 @@ while i < 2:
                         if bool(fileName):
                             with open(filePath, 'wb') as f:
                                 f.write(part.get_payload(decode=True))
-                                print(
-                                    f"I'm writing the file {fileName} to disk {i} times")
                                 f.close()
                         try:
                             os.rename(filePath, xl_file)
@@ -109,6 +103,7 @@ xfile1_not_xfile2.to_excel(os.path.join(att_dir, 'new_items.xlsx'))
 
 print(xfile1_not_xfile2)
 
+# Message sending section
 
 message = MIMEMultipart()
 message['From'] = sender_address
