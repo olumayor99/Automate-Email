@@ -38,6 +38,6 @@ Make sure you complete the following steps before using this repo
 
 12. Reboot your instance afterwards to confirm the script is working.
 
-13. Create an EC2 Instance Scheduler to turn the instance on and off automatically according to a schedule. The script takes approximately 5 minutes to complete, and since an AWS instance takes a while to boot, you can configure the scheduler to switch the instance on for maybe 20 minutes at a time.
+13. Create a cron job in the EC2 instance by running "crontab -e" as you wish. I used "0 12 \* \* 0-6 /usr/bin/python3 /home/ubuntu/email_auto.py" which means "At 12:00 on every day-of-week from Sunday through Saturday, run email_auto.py". You can create custom cron jobs using https://crontab.guru/.
 
 Feel free to ask me any additional questions.
